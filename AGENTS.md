@@ -13,8 +13,8 @@ here is Markdown or YAML that some other tool reads.
 
 ```
 extras/openspec-schemas/tdd/   the shared OpenSpec schema  → each repo's openspec/schemas/
-extras/agents/                 orchestration agents        → ~/.claude/agents (flattened)
-agents/  skills/               skillshare source dirs, currently empty
+extras/agents/                 orchestration agents        → each repo's .claude/agents/
+skills/                        skillshare skills source, currently empty
 config.yaml                    skillshare config — GITIGNORED, machine-local
 ```
 
@@ -42,8 +42,12 @@ Add a new consumer repo:
 
 ```sh
 skillshare extras openspec-schemas --add-target /path/to/repo/openspec/schemas
+skillshare extras agents --add-target /path/to/repo/.claude/agents
 skillshare sync extras --force
 ```
+
+Both targets, always: the agents implement the lifecycle the schema describes, so a repo
+that pins one must pin the other. Commit the synced files in the consumer repo.
 
 Then set `schema: tdd` in that repo's `openspec/config.yaml`. A missing schema makes
 openspec fail loudly (`Schema 'tdd' not found`) rather than fall back, so a broken target
@@ -78,7 +82,13 @@ Four Claude Code agents, flat `.md` files with YAML frontmatter (`name`, `descri
 - `phase-orchestrator` — drives ff-change → apply → archive across many changes
 
 `name` in frontmatter must match the filename stem; `flatten: true` in the target config
-means these land directly in `~/.claude/agents/` with no directory nesting.
+means these land directly in the target `.claude/agents/` with no directory nesting.
+
+They install **per repo, not into `~/.claude/agents`**. Repo-level keeps agents and schema
+pinned to the same version, and makes them present in CI and in cloud clones, which never
+see a user-level `~/.claude`. The schema's apply instruction tests exactly this — "if this
+repository defines implementer and reviewer subagent types" — so a user-level install
+reads as absent.
 
 ## Editing rules
 
@@ -120,5 +130,7 @@ consumer repo and running `openspec validate <change> --strict` there.
 - Targets hold real copied files, not symlinks, so CI and cloud clones work and each
   consumer pins its own version by committing what it synced. A change here reaches a
   consumer only after that consumer syncs and commits.
-- Editing `~/.claude/agents/*.md` directly edits a *copy*. The source is
-  `extras/agents/`; sync overwrites the copy.
+- Editing a repo's `.claude/agents/*.md` directly edits a *copy*. The source is
+  `extras/agents/`; the next forced sync overwrites it.
+- A repo's `.claude/agents/` also holds its own repo-specific agents. Sync only writes the
+  four names in `extras/agents/` and leaves the rest alone.
