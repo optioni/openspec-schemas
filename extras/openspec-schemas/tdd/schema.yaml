@@ -585,5 +585,3 @@ apply:
     you hit a blocker or need clarification. Exhaust the workspace and readable sibling
     repositories before reporting a blocker. Do not edit documentation merely because the
     change is complete.
-
-# canary: update-loop test
