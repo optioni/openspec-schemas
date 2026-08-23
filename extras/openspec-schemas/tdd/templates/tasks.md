@@ -1,3 +1,9 @@
+<!-- Every group needs a kind marker: behavior | refactor | operational.
+     Behavior: RED → GREEN → REFACTOR. Refactor: CHARACTERIZE → REFACTOR → VERIFY.
+     Operational: CHECK → CHANGE → VERIFY — this is where plumbing goes (manifests,
+     lockfiles, CI and build config, formatter settings). Do NOT write a test that
+     asserts a config key; the command that consumes the config is the check. -->
+
 ## 0. Acceptance Test — Outer Loop RED
 <!-- kind: behavior -->
 <!-- OPT-IN. Keep this group only when the change alters a client-visible interface whose
