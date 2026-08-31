@@ -15,11 +15,22 @@ here is Markdown or YAML that some other tool reads.
 extras/openspec-schemas/tdd/   the shared OpenSpec schema  → each repo's openspec/schemas/
 extras/agents/                 orchestration agents        → each repo's .claude/agents/
 skills/                        skillshare skills source, currently empty
+catalog.yaml                   what this repo publishes, for graft consumers
 config.yaml                    skillshare config — GITIGNORED, machine-local
 ```
 
 This repo *is* skillshare's root: `~/.config/skillshare` is a symlink to it. `config.yaml`
 at the root is skillshare's own config, not project config.
+
+`catalog.yaml` is the pull-side equivalent: skillshare pushes from targets declared in the
+gitignored `config.yaml`, while graft consumers pull by naming this repo and an item. It
+declares one entry per published item — the `tdd` schema and the four agents — with the
+path each one lives at here and the path a consumer puts it at (`{name}` interpolates the
+item name; `flatten: true` drops the agents straight into `.claude/agents/` with no
+nesting). Those destinations mirror what skillshare already writes, so the two
+distribution paths agree byte for byte. Adding content means adding its `provides` entry
+here too, and consumers pin a tag, so a change reaches them only once it is pushed and
+tagged.
 
 ## Setup
 

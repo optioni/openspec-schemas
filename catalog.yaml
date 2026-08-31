@@ -1,0 +1,15 @@
+version: 1
+
+kinds:
+  schema:
+    to: "openspec/schemas/{name}"
+  agent:
+    to: ".claude/agents/"
+    flatten: true
+
+provides:
+  - { kind: schema, name: tdd,                        from: extras/openspec-schemas/tdd }
+  - { kind: agent,  name: apply-orchestrator,         from: extras/agents/apply-orchestrator.md }
+  - { kind: agent,  name: outside-in-tdd-implementer, from: extras/agents/outside-in-tdd-implementer.md }
+  - { kind: agent,  name: outside-in-tdd-reviewer,    from: extras/agents/outside-in-tdd-reviewer.md }
+  - { kind: agent,  name: phase-orchestrator,         from: extras/agents/phase-orchestrator.md }
