@@ -1,37 +1,42 @@
 # openspec-schemas
 
-Shared OpenSpec workflow assets, distributed by [skillshare](https://github.com/runkids/skillshare).
-
-This repo is skillshare's root: `~/.config/skillshare` is a symlink to it.
+Shared OpenSpec workflow assets — one schema, four agents — vendored into consuming repos
+by [graft](https://github.com/optioni/graft).
 
 ```
 extras/openspec-schemas/tdd/   the shared OpenSpec schema  → each repo's openspec/schemas/
-extras/agents/                 orchestration agents        → ~/.claude/agents
+extras/agents/                 orchestration agents        → each repo's .claude/agents/
 ```
 
-## Updating everywhere
+Consumers get committed copies, not forks or symlinks, so CI and cloud clones work and
+each repo pins its own version.
+
+## Using it in a repo
 
 ```sh
-git -C ~/Code/openspec-schemas pull && skillshare sync extras --force
+graft add github.com/optioni/openspec-schemas@v0.1.0 schema:tdd 'agent:*'
 ```
 
-`--force` is **required**. Without it, copy mode silently skips files that changed and
-reports success — you get "synced" with nothing updated. `skillshare pull` does not help
-here either; it syncs skills only, not extras.
-
-Targets hold real copied files, not symlinks, so CI and cloud clones work and each repo
-pins its own version by committing the synced files.
-
-## Adding a repo
-
-```sh
-skillshare extras openspec-schemas --add-target /path/to/repo/openspec/schemas
-skillshare sync extras --force
-```
+Take both: the agents implement the lifecycle the schema describes, so a repo that pins
+one must pin the other. Commit the synced files along with `graft.toml` and `graft.lock`.
 
 Then set `schema: tdd` in that repo's `openspec/config.yaml`. If the schema is missing,
 openspec fails loudly (`Schema 'tdd' not found`) rather than falling back — so a broken
-target is visible, not silent.
+install is visible, not silent.
+
+Later, `graft update` moves the pin and re-syncs. Until you run it, nothing changes.
+
+## Publishing a change
+
+Edit here, then push and tag — a change reaches no one until it is tagged:
+
+```sh
+git push origin main
+git tag -a vX.Y.Z -m "..." && git push origin vX.Y.Z
+```
+
+`catalog.yaml` declares what this repo offers and where each item belongs. New content
+needs a `provides` entry there or it is invisible.
 
 ## What belongs where
 
@@ -46,9 +51,7 @@ the whole block without complaining. Quote those entries.
 
 ## Caveats
 
-- `config.yaml` is gitignored (targets are absolute paths), so target declarations do not
-  travel between machines. Content does; targets are re-declared per machine.
-- `skillshare --dry-run` is not side-effect free — it has created directories while
-  "previewing".
-- To keep a local edit made in a target, `skillshare extras collect` it back into the
-  source before the next forced sync.
+- Synced files are derived artifacts. `graft sync` overwrites them, so edit the source
+  here, never the copy in a consumer — there is no way to collect an edit back.
+- graft prunes only files it wrote, so a repo's own agents can sit in `.claude/agents/`
+  beside the synced four and never be touched.

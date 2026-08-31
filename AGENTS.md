@@ -3,10 +3,10 @@
 ## Project Overview
 
 This repository is a **content registry**, not an application. It holds one shared
-OpenSpec schema and a set of Claude Code agents, and distributes them to every other
-repo and to `~/.claude` via [skillshare](https://skillshare.runkids.cc). The point is
-**one schema to rule them all**: consumers get copies, not forks, so the workflow cannot
-drift repo to repo.
+OpenSpec schema and a set of Claude Code agents, and publishes them to every other repo
+via [graft](https://github.com/optioni/graft), which vendors them in as committed copies.
+The point is **one schema to rule them all**: consumers get copies, not forks, so the
+workflow cannot drift repo to repo.
 
 There is no source code, no package manager, no build, and no test suite. Every file
 here is Markdown or YAML that some other tool reads.
@@ -14,59 +14,77 @@ here is Markdown or YAML that some other tool reads.
 ```
 extras/openspec-schemas/tdd/   the shared OpenSpec schema  → each repo's openspec/schemas/
 extras/agents/                 orchestration agents        → each repo's .claude/agents/
-skills/                        skillshare skills source, currently empty
-catalog.yaml                   what this repo publishes, for graft consumers
-config.yaml                    skillshare config — GITIGNORED, machine-local
+catalog.yaml                   what this repo publishes, and where each item belongs
 ```
-
-This repo *is* skillshare's root: `~/.config/skillshare` is a symlink to it. `config.yaml`
-at the root is skillshare's own config, not project config.
-
-`catalog.yaml` is the pull-side equivalent: skillshare pushes from targets declared in the
-gitignored `config.yaml`, while graft consumers pull by naming this repo and an item. It
-declares one entry per published item — the `tdd` schema and the four agents — with the
-path each one lives at here and the path a consumer puts it at (`{name}` interpolates the
-item name; `flatten: true` drops the agents straight into `.claude/agents/` with no
-nesting). Those destinations mirror what skillshare already writes, so the two
-distribution paths agree byte for byte. Adding content means adding its `provides` entry
-here too, and consumers pin a tag, so a change reaches them only once it is pushed and
-tagged.
 
 ## Setup
 
-- Requires the `skillshare` CLI (`brew install`; verify with `skillshare --version`).
-- No install step. Clone, edit Markdown/YAML, sync.
+Nothing to install here — clone, edit Markdown/YAML, commit. Publishing needs only `git`.
+Consumers need the `graft` CLI (`brew install --cask optioni/tap/graft`); this repo does
+not run it.
 
-## The distribution workflow
+## Publishing
 
-Push content to every declared target:
-
-```sh
-git -C ~/Code/openspec-schemas pull && skillshare sync extras --force
-```
-
-`--force` is **mandatory**. Without it, copy mode silently skips files whose target copy
-changed and still reports success — you get "synced" with nothing updated. `skillshare
-pull` does not substitute: it syncs skills only, never extras.
-
-Add a new consumer repo:
+Distribution is **pull-based and version-pinned**. Nothing here reaches a consumer until
+it is tagged and that consumer asks for it:
 
 ```sh
-skillshare extras openspec-schemas --add-target /path/to/repo/openspec/schemas
-skillshare extras agents --add-target /path/to/repo/.claude/agents
-skillshare sync extras --force
+git commit ... && git push origin main
+git tag -a vX.Y.Z -m "..." && git push origin vX.Y.Z
 ```
 
-Both targets, always: the agents implement the lifecycle the schema describes, so a repo
-that pins one must pin the other. Commit the synced files in the consumer repo.
+Tag only a pushed commit — a tag pointing at a commit no one can fetch is worse than no
+tag. Current published version: `v0.1.0`.
+
+Then, in each consumer, `graft update` moves the pin and syncs. A consumer that never
+runs it stays on its old version indefinitely, which is the intended behavior: a repo
+upgrades its schema and agents together, deliberately, and the diff is reviewable because
+the synced files are committed.
+
+## `catalog.yaml`
+
+The catalog is this repo's half of the contract: it declares every published item and
+where a consumer should put it. graft knows nothing about schemas or agents — the
+conventions arrive as data from this file.
+
+```yaml
+kinds:
+  schema:
+    to: "openspec/schemas/{name}"    # {name} interpolates the item name
+  agent:
+    to: ".claude/agents/"            # trailing slash: the file lands in this directory
+    flatten: true                    # no nesting, whatever the source layout
+
+provides:
+  - { kind: schema, name: tdd, from: extras/openspec-schemas/tdd }
+```
+
+- `to` is a path in the **consumer's** repo, and a consumer may override it in its own
+  `graft.toml`. The kind name carries no guarantee; the destination is what a consumer
+  actually agrees to, and `graft add` shows it before writing anything.
+- An item's identity is `kind:name`, which is stable across restructuring. `from` may
+  move freely inside this repo without touching any consumer's config — so reorganizing
+  `extras/` is safe as long as `provides` keeps up.
+- Adding content means adding its `provides` entry. An item with no entry is invisible,
+  no matter where it sits.
+
+Format rules graft enforces, so a mistake fails loudly rather than half-syncing: exactly
+one YAML document, `version: 1`, unknown keys rejected, and every `from` relative and
+inside the repo.
+
+## Consuming this repo
+
+```sh
+graft add github.com/optioni/openspec-schemas@v0.1.0 schema:tdd 'agent:*'
+```
+
+Take both the schema and the agents, always: the agents implement the lifecycle the
+schema describes, so a repo that pins one must pin the other. Commit the synced files
+along with `graft.toml` and `graft.lock`.
 
 Then set `schema: tdd` in that repo's `openspec/config.yaml`. A missing schema makes
-openspec fail loudly (`Schema 'tdd' not found`) rather than fall back, so a broken target
-is visible rather than silent.
-
-To keep an edit that was made directly in a target, run `skillshare extras collect` to
-pull it back into this source before the next forced sync — otherwise `--force`
-overwrites it.
+openspec fail loudly (`Schema 'tdd' not found`) rather than fall back, so a broken
+install is visible rather than silent.
 
 ## Repository layout
 
@@ -92,8 +110,8 @@ Four Claude Code agents, flat `.md` files with YAML frontmatter (`name`, `descri
 - `outside-in-tdd-reviewer` — reviews a finished change, reports only
 - `phase-orchestrator` — drives ff-change → apply → archive across many changes
 
-`name` in frontmatter must match the filename stem; `flatten: true` in the target config
-means these land directly in the target `.claude/agents/` with no directory nesting.
+`name` in frontmatter must match the filename stem, and `flatten: true` in the catalog
+means these land directly in the consumer's `.claude/agents/` with no directory nesting.
 
 They install **per repo, not into `~/.claude/agents`**. Repo-level keeps agents and schema
 pinned to the same version, and makes them present in CI and in cloud clones, which never
@@ -128,20 +146,23 @@ consumer repo and running `openspec validate <change> --strict` there.
 
 - Conventional Commits: `type(scope): description` (`feat`, `fix`, `docs`, `refactor`,
   `chore`). Use `!` or a `BREAKING CHANGE:` footer when a schema change forces consumers
-  to update.
+  to update — that footer is the signal to cut a major tag.
 - Commit straight to `main`; no feature branch unless the work genuinely needs isolation.
-- Never push or open a PR unless explicitly asked.
+- Never push or open a PR unless explicitly asked. Since publishing *is* a push and a tag,
+  a change sitting unpushed on `main` has reached nobody — that is a normal state here,
+  not a mistake to fix unprompted.
 
 ## Gotchas
 
-- `config.yaml` is gitignored because targets are absolute paths. Content travels between
-  machines; **target declarations do not** and must be re-declared per machine.
-- `skillshare --dry-run` is not side-effect free — it has created directories while
-  "previewing". Do not treat it as a safe preview.
-- Targets hold real copied files, not symlinks, so CI and cloud clones work and each
-  consumer pins its own version by committing what it synced. A change here reaches a
-  consumer only after that consumer syncs and commits.
-- Editing a repo's `.claude/agents/*.md` directly edits a *copy*. The source is
-  `extras/agents/`; the next forced sync overwrites it.
-- A repo's `.claude/agents/` also holds its own repo-specific agents. Sync only writes the
-  four names in `extras/agents/` and leaves the rest alone.
+- Synced files in a consumer are **derived artifacts**. `graft sync` overwrites them
+  without asking, so editing a repo's `.claude/agents/*.md` or `openspec/schemas/tdd/`
+  edits a copy that the next sync discards. The source is here. There is no way to
+  collect an edit back — reproduce it in this repo instead.
+- graft prunes only files it wrote, tracked per item in the consumer's `graft.lock`, so a
+  repo's own agents can sit in `.claude/agents/` beside the synced four and never be
+  touched.
+- Consumers hold real copied files, not symlinks, so CI and cloud clones work and each
+  consumer pins its own version by committing what it synced.
+- `rev = "main"` is a legal pin and will not drift, because `sync` never re-resolves —
+  but `graft update` on it jumps to whatever `main` is at that moment, unreviewed. Tags
+  exist so that upgrade is a decision.
