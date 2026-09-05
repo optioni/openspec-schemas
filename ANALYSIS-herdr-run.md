@@ -123,6 +123,13 @@ defects every time.
 
 ## Recommendations, in order of payoff
 
+*All six landed — 1 and 2 in `3f71e47`, the rest in the commit that added this line. One
+part was dropped on inspection: the "thin plan-gen / archive drivers" under 3. Those two
+dispatch prompts are already two lines each inside `phase-orchestrator`, so a wrapper agent
+would not have prevented the reinvention — that came from the main session dispatching them
+directly instead of through the phase orchestrator.*
+
+
 1. **Replace the inline-only apply policy with a context budget.** Default to per-group
    dispatch above a threshold (group count, or observed context), keeping inline for small
    changes. This is the ~3× lever on the whole run.

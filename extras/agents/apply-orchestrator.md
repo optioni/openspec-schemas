@@ -41,24 +41,20 @@ A change name (e.g., `stats-engine`). The change's artifacts already exist under
    themselves, in its own disposable context. Reading them here pays for every file once per
    group for the rest of the change.
 
-6. **Decide where to work.** Run `git worktree list`, and the harness's own agent listing if it
-   has one (e.g. `ListAgents`). If another session may be active in this repository, create an
-   isolated worktree and do all of this change's work there:
+6. **Work in the checkout you were given.** Do not create a git worktree unless the project
+   rules ask for one or the user does. A worktree moves the change somewhere the user is not
+   looking and leaves a merge for later; that is their call, not a guess you make from in here.
+   You cannot actually establish whether another session is active, and acting on the
+   possibility has gone wrong far more often than right.
 
-   ```bash
-   git worktree add ../<repo>-<name> -b <name>
-   ```
+   Treat the tree as shared state anyway — parallel groups put two implementers in it. Stage
+   explicit paths, never `git add -A`/`-u`; never a relative ref (`HEAD~1`, `HEAD^`, `@{1}`) in
+   `reset`, `rebase` or `--amend`; and treat a failure in a file you did not touch as suspect
+   before debugging it.
 
-   A shared checkout means a shared index, a shared HEAD, and usually a shared build cache. Two
-   sessions in one tree produce failures that do not look cross-session: a broad `git add` sweeps
-   the other session's files into your commit, `git reset HEAD~1` drops a commit that is not
-   yours, a build compiles the other's half-finished multi-file edit, and either session's
-   uncommitted lint or type error fails the shared gate for both. Each surfaces as an error in a
-   file you never touched.
-
-   Report the worktree path in your final report so the work can be found and merged. If a
-   worktree is impossible for this toolchain, say so explicitly in the report and follow the
-   shared-tree discipline in the schema's Isolation section instead.
+   If the project rules or the user do call for isolation, create it explicitly with
+   `git worktree add ../<repo>-<name> -b <name>`, work there, and report the path so the work
+   can be found and merged.
 
 ## Step 2: Parse task groups
 
@@ -112,24 +108,18 @@ implementer. Stop and dispatch it.
 Work through pending groups in order, dispatching each group's implementers and gating the
 result before moving on.
 
-**Before starting each group, run a usage safety check.** Run the `checking-usage` skill's
-`fetch-usage.sh --json` and read the authoritative 5-hour session utilization. You are guarding
-against the rate limit being hit **mid-group**, which halts you and leaves half-written,
-uncommitted work (and tasks.md not yet marked).
+**The group boundary is the only safe place to stop.** Running out of budget mid-group halts
+you with half-written, uncommitted work and tasks.md not yet marked; stopping between groups
+loses nothing at all. So finish or abandon a group cleanly, and make every decision to continue
+at a boundary.
 
-- `five_hour.utilization` is the percent of the 5h **session** limit used (remaining = `100 -
-  utilization`); `five_hour.resets_at` is when the window resets. `five_hour.severity`
-  (`warning`/higher) is a ready-made "am I close?" signal.
-- If the session limit is heavily used — a real risk of hitting it before a group completes —
-  **stop before starting the next group**, at a clean boundary where the previous group's tasks
-  are marked `- [x]` and committed, and report `Apply paused` with the utilization, the reset
-  time (`resets_at`), and the reason. Resume after the window resets or on the user's instruction.
-
-`fetch-usage.sh` calls the OAuth usage API and reports your true remaining quota — unlike
-`ccusage`, which estimates from local logs against an assumed budget and is wrong for this
-purpose. If `fetch-usage.sh` fails (no token / offline), fall back to telling the user to run the
-interactive `/usage` command. Treat this as a safety heuristic: when in doubt, pause at the
-boundary rather than risk a mid-group halt. (See the `checking-usage` skill for details.)
+If this harness exposes a usage or quota check — the project rules will name it if the
+repository has one — run it at each boundary and read the remaining session allowance. When
+what remains is not clearly enough to finish the next group, **do not start it**: report
+`Apply paused` with the numbers, the reset time, and the reason, at a boundary where the
+previous group is marked `- [x]` and committed. Resume after the window resets or on the user's
+instruction. If no such check exists, keep the boundary discipline anyway and surface a pause
+when the user asks for one.
 
 ---
 
@@ -265,14 +255,12 @@ Reason: <description>
   of eyes, not context savings.
 - **Acceptance-red groups must not have implementation** — the group is done when the test fails
   for the right reason.
-- **Pause between groups, never mid-group** — if the usage check shows a risk of hitting the rate
-  limit before a group finishes, stop before starting it and report `Apply paused`. A boundary
-  pause loses nothing; a mid-group halt strands uncommitted work.
-- **Prefer an isolated worktree** — if any other session may be working in this repository, do the
-  change's work in its own `git worktree` and merge it back as one reviewed unit. A working tree,
-  its index, its HEAD and its build cache are all shared state.
-- **Never rewrite shared history** — no relative refs (`HEAD~1`, `HEAD^`, `@{1}`) in `reset`,
-  `rebase` or `--amend` in a shared checkout, and stage explicit paths rather than `git add -A`/`-u`.
-  Fix forward instead.
-- **A failure in a file you do not own is suspect** — in a shared checkout, re-run and check the
-  named file is yours before debugging it.
+- **Pause between groups, never mid-group** — a boundary pause loses nothing; a mid-group halt
+  strands uncommitted work. Decide whether to continue only at a boundary.
+- **No worktree unless asked** — work in the checkout you were given. Isolation is the user's
+  call or the project rules', never a guess made from inside the session.
+- **Treat the tree as shared anyway** — stage explicit paths, never `git add -A`/`-u`; no
+  relative refs (`HEAD~1`, `HEAD^`, `@{1}`) in `reset`, `rebase` or `--amend`; fix forward.
+  Parallel groups mean two implementers are in there with you.
+- **A failure in a file you do not own is suspect** — re-run and check the named file is yours
+  before debugging it.
