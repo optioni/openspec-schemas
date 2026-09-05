@@ -623,8 +623,11 @@ apply:
     implementer per task group, run the gate between groups, and mark the group complete.
     Pre-gather context before dispatching — the agent starts cold and must not explore
     the codebase itself: include the proposal, the specs relevant to that group, design.md,
-    that group's task lines only, a short git state summary, the existing source files the
-    group will modify, and one similar existing implementation as a pattern reference.
+    that group's task lines only, a short git state summary, and a manifest naming the
+    exact paths the group will read or modify plus one similar existing implementation as
+    a pattern reference. Name the files rather than quoting them: naming is what stops the
+    agent exploring, while quoting charges every file to the orchestrator's context for the
+    rest of the change, which is the cost per-group dispatch exists to avoid.
     Tell it to report NEEDS_CONTEXT rather than searching for anything not provided. After
     completing group N, dispatch all remaining groups marked `<!-- parallel-after: N -->`
     simultaneously, then gate each. Dispatch the Change Review group to the reviewer agent

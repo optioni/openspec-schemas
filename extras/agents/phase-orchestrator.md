@@ -51,7 +51,7 @@ Spawn an **`apply-orchestrator`** subagent **using the `sonnet` model**:
 
 > You are implementing the change `"<change-name>"`. Its artifacts exist under `openspec/changes/<change-name>/`. Work through all task groups in order until all are complete or you are blocked. Report the final status as either "Apply complete" or "Apply paused" with the reason.
 
-One subagent per change is the right isolation boundary for an unattended batch: it keeps each change's full implementation context out of your (the phase orchestrator's) window. Note that the apply-orchestrator implements its change's task groups **inline** within its own context — it does not fan out a subagent per group; it dispatches only a reviewer for the Change Review group.
+One subagent per change is the right isolation boundary for an unattended batch: it keeps each change's full implementation context out of your (the phase orchestrator's) window. The apply-orchestrator in turn dispatches **one implementer subagent per task group**, so no single context carries a whole change; expect its report to summarise groups, not code.
 
 If the subagent reports `Apply paused` or any blocker: **surface the full status output and ask for instructions**. Options to offer:
 1. Retry (after the user resolves the issue)
