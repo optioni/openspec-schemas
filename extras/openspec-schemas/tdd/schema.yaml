@@ -230,6 +230,25 @@ artifacts:
       setting that corrupts data without erroring. "Loudly" is the common case: if a bad
       value crashes at boot or fails the build, the boot and the build are the test.
 
+      **Every check you write must be run before the plan ships, and must be able to fail.**
+      Write the check out in full in the task, run it at planning time against current HEAD,
+      and record its exit status and the relevant line of its output next to it. Which result
+      you need depends on what the check is for:
+
+      - A check standing in for a **behavior this change adds** must be RED at HEAD. It cannot
+        be otherwise — the behavior does not exist yet. A green one is testing something else.
+      - A check **pinning an invariant that already holds** — a grep that must find nothing, a
+        boundary that must not move — is green at HEAD, which proves nothing on its own. It
+        needs a negative control: plant the violation, show the check fires, remove the plant,
+        show it goes quiet again. Record both halves. An unfalsifiable guard is worse than no
+        guard, because it is believed.
+
+      **Every number in the plan comes from a command.** Line counts, call-site counts,
+      scenario totals, coverage percentages, "the only three places that do X" — write the
+      command that produced the number beside the number. Counts arrived at by reading are
+      wrong often enough that a reviewer who recounts them will keep finding defects, and a
+      task built on a wrong count sends the implementer to the wrong places.
+
       **TDD structure — every behavior-changing implementation group MUST follow this
       pattern:**
       1. RED: write the smallest failing tests that express the group's behavior. Derive
