@@ -36,10 +36,14 @@ git tag -a vX.Y.Z -m "..." && git push origin vX.Y.Z
 Tag only a pushed commit — a tag pointing at a commit no one can fetch is worse than no
 tag. Current published version: `v0.2.0`.
 
-Then, in each consumer, `graft update` moves the pin and syncs. A consumer that never
-runs it stays on its old version indefinitely, which is the intended behavior: a repo
-upgrades its schema and agents together, deliberately, and the diff is reviewable because
-the synced files are committed.
+Then, in each consumer, `graft update <source> --to vX.Y.Z` moves the pin and syncs.
+Plain `graft update` does **not** find the new tag — it re-resolves the rev already in
+`graft.toml` to the sha it names today, so against a pinned tag it reports "up to date"
+forever. `--to` is the one path in `update` that writes `graft.toml`; run it with
+`--dry-run` first to see the file list. A consumer that never runs it stays on its old
+version indefinitely, which is the intended behavior: a repo upgrades its schema and
+agents together, deliberately, and the diff is reviewable because the synced files are
+committed.
 
 ## `catalog.yaml`
 
