@@ -60,13 +60,29 @@ work are ~50k tokens — cheap to re-read twelve times, ruinous to carry for 900
 
 ## Finding 2 — the bundle contradicts itself on parallel groups
 
-`schema.yaml` instructs the planner to mark independent groups
-`<!-- parallel-after: N -->`. **8 of 14 changes carry those markers.**
-`apply-orchestrator.md` contains no handling for them and forbids the fan-out that would
-use them ("never split a normal change into per-group subagents by default").
+> **Corrected.** This section first claimed "8 of 14 changes carry those markers." That
+> was wrong, and the error is instructive: the grep matched the planners' *prose*
+> explaining why they had **not** used the marker. The v0.2.0 commit and tag messages
+> carry the wrong number and cannot be edited; this is the record.
 
-The planner did the analysis; the applier discards it. This is wall-clock lost as well as
-tokens — apply accounted for 726 agent-minutes.
+`schema.yaml` instructs the planner to mark independent groups
+`<!-- parallel-after: N -->`. `apply-orchestrator.md` contained no handling for them and
+forbade the fan-out that would use them ("never split a normal change into per-group
+subagents by default"). That contradiction inside one shipped bundle was real and is
+fixed in v0.2.0.
+
+What it cost, though, was nothing. **The whole corpus contains exactly one marker** —
+`list-view` group 3, `parallel-after: 1` — and a single marked group has no sibling to run
+beside, so even that one yields no parallelism. The planners were right to decline, and
+said so explicitly, five times in near-identical words:
+
+> No group carries a `parallel-after` marker. Groups 2 through 8 all edit
+> `src/changes.rs`, and one file is shared mutable state.
+
+This is a single-crate Rust project with eleven source files and a whole-tree gate. Its
+groups are sequential by construction. So the applier discarded an analysis the planner
+had correctly concluded was empty — no wall-clock was lost, and `parallel-after` has yet
+to earn its place here even though the machinery now works.
 
 ## Finding 3 — the agent set has holes, so prompts got reinvented 40+ times
 
