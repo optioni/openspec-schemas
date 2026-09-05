@@ -466,6 +466,17 @@ artifacts:
       the assumptions under audit and will confirm them. This session merges the findings,
       repairs the owning artifact, and writes planning-review.md; the reviewers edit nothing.
 
+      If this repository defines a planning reviewer subagent type, dispatch one per slice,
+      simultaneously. Slice the review list four ways, which keeps each reviewer's scope
+      small enough to be thorough and stops the same gap arriving four times: (A) capability
+      coverage, scenario quality, and cross-artifact contradictions; (B) design completeness,
+      test boundaries, and the audit of whether each proposed check could fail at all;
+      (C) task alignment, lifecycle discipline, and `parallel-after` independence; and
+      (D) factual verification — take every empirical claim the artifacts make about the
+      codebase or the environment and check it by running the command or reading the source,
+      reporting each as confirmed or false. Reviewer D finds the defects the other three
+      cannot, because a document review cannot catch a number nobody measured.
+
       Review all of the following:
 
       - **Capability coverage**: every capability in proposal.md has the correct delta

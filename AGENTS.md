@@ -102,12 +102,13 @@ decoration.
 
 ### `extras/agents/`
 
-Four Claude Code agents, flat `.md` files with YAML frontmatter (`name`, `description`,
+Five Claude Code agents, flat `.md` files with YAML frontmatter (`name`, `description`,
 `model`):
 
-- `apply-orchestrator` — implements a change group by group inline
-- `outside-in-tdd-implementer` — escape hatch for one oversized group
-- `outside-in-tdd-reviewer` — reviews a finished change, reports only
+- `apply-orchestrator` — coordinates a change, dispatching one implementer per task group
+- `outside-in-tdd-implementer` — implements one task group; the standard unit of apply work
+- `outside-in-tdd-reviewer` — reviews a finished change against its plan, reports only
+- `planning-reviewer` — reviews one slice of a plan before implementation, reports only
 - `phase-orchestrator` — drives ff-change → apply → archive across many changes
 
 `name` in frontmatter must match the filename stem, and `flatten: true` in the catalog
