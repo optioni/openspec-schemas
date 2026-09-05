@@ -34,7 +34,7 @@ git tag -a vX.Y.Z -m "..." && git push origin vX.Y.Z
 ```
 
 Tag only a pushed commit — a tag pointing at a commit no one can fetch is worse than no
-tag. Current published version: `v0.1.0`.
+tag. Current published version: `v0.2.0`.
 
 Then, in each consumer, `graft update` moves the pin and syncs. A consumer that never
 runs it stays on its old version indefinitely, which is the intended behavior: a repo
@@ -75,7 +75,7 @@ inside the repo.
 ## Consuming this repo
 
 ```sh
-graft add github.com/optioni/openspec-schemas@v0.1.0 schema:tdd 'agent:*'
+graft add github.com/optioni/openspec-schemas@v0.2.0 schema:tdd 'agent:*'
 ```
 
 Take both the schema and the agents, always: the agents implement the lifecycle the
@@ -160,7 +160,7 @@ consumer repo and running `openspec validate <change> --strict` there.
   edits a copy that the next sync discards. The source is here. There is no way to
   collect an edit back — reproduce it in this repo instead.
 - graft prunes only files it wrote, tracked per item in the consumer's `graft.lock`, so a
-  repo's own agents can sit in `.claude/agents/` beside the synced four and never be
+  repo's own agents can sit in `.claude/agents/` beside the synced five and never be
   touched.
 - Consumers hold real copied files, not symlinks, so CI and cloud clones work and each
   consumer pins its own version by committing what it synced.
