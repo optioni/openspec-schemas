@@ -126,26 +126,45 @@ when the user asks for one.
 ### Groups typed: acceptance-red, acceptance-green, implementation — dispatch an implementer
 
 **Pre-gather the group's context.** The implementer starts cold and must not explore the
-codebase. Give it, in the dispatch prompt:
+codebase. Build every dispatch prompt in this order, and keep the order fixed for the whole
+change — the sections that do not vary must be byte-identical from one group to the next, so
+each dispatch extends a prefix its siblings already warmed instead of opening a new one:
 
-1. **proposal.md**, **design.md**, and the spec files relevant to *this group's* domain — not
-   every spec in the change.
-2. **This group's task lines only**, verbatim, including its `<!-- kind: -->` marker and any
+**A. The invariant block — identical in every dispatch of this change, and first.**
+
+1. **proposal.md and design.md, quoted in full.** Not named — quoted. The implementer will
+   read them either way; the only question is whether it reads them eight times as eight
+   different prefixes, or once as a prefix its siblings share. Quote them verbatim, in this
+   order, with nothing group-specific before or between them. Do not summarise, reorder or
+   re-wrap them between groups; an edit of one character ends the shared prefix.
+
+**B. The group-specific block — everything below, in this order, after the invariant block.**
+
+2. **The spec files for *this group's* domain**, quoted — not every spec in the change. Specs
+   are the one artifact that is genuinely per-group; quoting all of them would pay for the
+   whole change in every dispatch.
+3. **This group's task lines only**, verbatim, including its `<!-- kind: -->` marker and any
    check scripts written out in the tasks. Name any task already `- [x]` as complete and in git.
-3. **A file manifest** — the exact absolute paths the group will read or modify, each with one
+4. **A file manifest** — the exact absolute paths the group will read or modify, each with one
    line saying why it is in the list, plus one existing implementation to follow for
-   conventions. Paths, not contents: the implementer reads each named file itself. Naming the
-   files is what stops it exploring; quoting them is what would blow up your context.
-4. **Git state** — one line per completed group, so it knows what code already exists.
-5. **The verification command** for this repository, from the project context, and the
+   conventions. Paths, not contents: the implementer reads each named file itself. Source files
+   are read, not quoted — they change under you between groups, and a quoted stale copy is
+   worse than a path.
+5. **Git state** — one line per completed group, so it knows what code already exists.
+6. **The verification command** for this repository, from the project context, and the
    instruction to report its output rather than a summary if it fails.
-6. **The group's type**, when it is `acceptance-red`: say explicitly that the goal is a
+7. **The group's type**, when it is `acceptance-red`: say explicitly that the goal is a
    correctly-failing test and it must implement nothing to make it pass.
-7. **Staging discipline**: stage explicit paths, never `git add -A`/`-u`. This is not optional
+8. **Staging discipline**: stage explicit paths, never `git add -A`/`-u`. This is not optional
    when parallel groups are running — two implementers in one working tree will otherwise
    commit each other's files.
 
 Tell it to report `NEEDS_CONTEXT` rather than searching for anything you did not provide.
+
+**Corrections go in section B, never in A.** When a group needs a fix to its task lines, a
+note about what an earlier group actually landed, or a trap you hit while gating, that is
+group-specific — put it with the task lines. Inserting it into the invariant block, or
+opening the prompt with it, ends the shared prefix for every group that follows.
 
 **Parallel dispatch.** After group N passes its gate, dispatch every pending group marked
 `<!-- parallel-after: N -->` in a single message so they run concurrently. Pre-gather each one
@@ -243,7 +262,12 @@ Reason: <description>
 - **Inline only for a change of three groups or fewer** — and then for all of it, not for a
   group here and there in a larger change.
 - **Never read source files while dispatching** — pass a manifest of paths. Reading a file into
-  your context charges it to every remaining turn of the change.
+  your context charges it to every remaining turn of the change. The change's own artifacts are
+  the exception: you have already paid for proposal.md and design.md by the time you dispatch,
+  so quoting them costs you nothing further and saves each implementer the read.
+- **Keep the invariant block invariant** — proposal.md and design.md open every dispatch of the
+  change, byte-identical. That block is the only thing your implementers share; the per-group
+  half of a cold start is roughly its own size again, and re-derived for each group.
 - **Honour `parallel-after`** — the planner marked those groups independent; dispatch them
   together after their named group's gate, each with its own pre-gathered manifest.
 - **Gate every group yourself** — run the verification command and read the output. A report of
