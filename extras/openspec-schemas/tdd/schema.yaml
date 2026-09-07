@@ -726,16 +726,16 @@ apply:
     implementer per task group, run the gate between groups, and mark the group complete.
     Pre-gather context before dispatching — the agent starts cold and must not explore
     the codebase itself. Build every dispatch prompt of a change in one fixed order, with
-    the part that does not vary first: proposal.md and design.md quoted in full, then that
-    group's specs, its task lines only, a short git state summary, and a manifest naming
-    the exact paths the group will read or modify plus one similar existing implementation
-    as a pattern reference. Quote the change's own artifacts, name the source files. The
-    artifacts cost the orchestrator nothing further — it has already read them to dispatch
-    at all — and the implementer would read them anyway, so quoting them is token-neutral
-    and saves it the fetch and the searches that follow. Do not expect a shared prompt to
-    be cached across sibling agents; measured, it is not. Source files are named rather
-    than quoted: naming is what stops the agent exploring, and a source file quoted for
-    one group is stale by the next.
+    the part that does not vary first: proposal.md and design.md by path together with the
+    slice this group implements quoted, then that group's specs the same way, its task
+    lines only, a short git state summary, and a manifest naming the exact paths the group
+    will read or modify plus one similar existing implementation as a pattern reference.
+    Quote slices, name documents. A dispatch prompt is a tool input that stays in the
+    orchestrator's context for the rest of the change, so a document quoted in full is
+    charged again for every group dispatched — which is the cost per-group dispatch exists
+    to avoid. Quoting the passage that governs this group is cheap and saves the searching;
+    quoting the document is not. Do not shape a dispatch prompt hoping to warm a prefix for
+    the next group: measured, a prompt is not cached across sibling agents.
     Tell it to report NEEDS_CONTEXT rather than searching for anything not provided. After
     completing group N, dispatch all remaining groups marked `<!-- parallel-after: N -->`
     simultaneously, then gate each. Dispatch the Change Review group to the reviewer agent

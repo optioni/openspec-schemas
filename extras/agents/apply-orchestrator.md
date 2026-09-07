@@ -129,20 +129,18 @@ when the user asks for one.
 codebase. Build every dispatch prompt in this order, and keep the order fixed for the whole
 change, so that a reader comparing two groups' dispatches sees only what actually differs:
 
-**A. The change's own artifacts — first, and the same in every dispatch of this change.**
-
-1. **proposal.md and design.md, quoted in full.** Not named — quoted. The implementer reads
-   them either way; the only question is whether it spends its own turns fetching them and
-   then searching them for its own two paragraphs. You have already read both to write the
-   manifest, so quoting costs you nothing and saves the implementer roughly ten turns before
-   its first edit. This does not make them cheaper in tokens — see the note below — it makes
-   them cost no turns.
-
-**B. The group-specific block — everything below, in this order, after block A.**
-
-2. **The spec files for *this group's* domain**, quoted — not every spec in the change. Specs
-   are the one artifact that is genuinely per-group; quoting all of them would pay for the
-   whole change in every dispatch.
+1. **proposal.md and design.md by path, plus the slice this group implements, quoted.** Name
+   the documents; quote the requirement text and the design decision that govern *this* group
+   — a few hundred words, the passage the implementer would otherwise spend four or five
+   searches locating inside a document it had just fetched. Quote the slice, never the
+   document. A dispatch prompt is a tool input and stays in your context for the rest of the
+   change, so a document quoted in full is charged again for every group you dispatch: on a
+   thirteen-dispatch change, quoting a 44 kB design.md adds about 163 000 tokens to your
+   context and roughly 1.2 million re-created tokens across the rebuilds, to save each
+   implementer one fetch in a context that ends when its group does. The slice costs a few
+   percent of that and saves most of the searching.
+2. **The spec files for *this group's* domain**, by path, with the relevant requirement and
+   its scenarios quoted — not every spec in the change, and not a whole spec file.
 3. **This group's task lines only**, verbatim, including its `<!-- kind: -->` marker and any
    check scripts written out in the tasks. Name any task already `- [x]` as complete and in git.
 4. **A file manifest** — the exact absolute paths the group will read or modify, each with one
@@ -264,16 +262,20 @@ Reason: <description>
 - **Inline only for a change of three groups or fewer** — and then for all of it, not for a
   group here and there in a larger change.
 - **Never read source files while dispatching** — pass a manifest of paths. Reading a file into
-  your context charges it to every remaining turn of the change. The change's own artifacts are
-  the exception: you have already paid for proposal.md and design.md by the time you dispatch,
-  so quoting them costs you nothing further and saves each implementer the read.
-- **Quoting the artifacts buys turns, not tokens.** Measured: an implementer's prompt is not
-  cached across its siblings. Two subagents dispatched back to back, one with a prompt
-  identical to the other's for its whole first 4 000 characters and one sharing nothing with
-  it at all, read exactly the same number of cached tokens — the fixed system-and-tools
-  prefix, and not one token more. The dispatch prompt falls after that boundary and is
-  re-created for every group, so a quoted artifact costs the same as the tool call that would
-  have fetched it. What you save is the fetch, and the four or five searches that follow it.
+  your context charges it to every remaining turn of the change.
+- **Quote slices, never documents.** Everything you write into a dispatch prompt you keep, once
+  per dispatch, until the change ends. On one measured change the dispatch prompts were already
+  24% of the orchestrator's accumulated content at thirteen dispatches; quoting the change's two
+  main artifacts into each would have taken its context from 254 000 tokens to about 418 000.
+- **Your context is re-created, not re-read, after every dispatch.** Measured: the cache lives
+  about five minutes, and an implementer runs for seven to sixty. All twelve of one run's
+  dispatch waits came back cold and rebuilt the whole context — 2.38 million tokens re-created.
+  You cannot avoid that by pinging; you are blocked inside the tool call and have no turn. The
+  only lever is being smaller, and it is linear: every token you carry is paid again per group.
+- **A shared prompt is not cached across siblings.** Two subagents dispatched back to back, one
+  with a prompt identical to the other's for its first 4 000 characters and one sharing nothing
+  with it, read exactly the same number of cached tokens — the fixed system-and-tools prefix,
+  and not one more. Do not shape a dispatch prompt hoping to warm a prefix for the next group.
 - **Honour `parallel-after`** — the planner marked those groups independent; dispatch them
   together after their named group's gate, each with its own pre-gathered manifest.
 - **Gate every group yourself** — run the verification command and read the output. A report of

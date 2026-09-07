@@ -172,9 +172,15 @@ every group. There is no cache breakpoint inside the first user message.
 > It is recorded here because the recommendation outlived its justification, and a reader who
 > finds only the surviving half would reasonably re-propose the dead one.
 
-What survives is smaller and true. Quoting proposal.md and design.md into the dispatch is
-**token-neutral** — the implementer pays for them as prompt instead of as a tool result —
-but it removes the fetch and the searching that follows. Group 5 of `gate-integrity` opened with
+What survives is smaller than that, and smaller than the first attempt at stating it. Quoting
+proposal.md and design.md into every dispatch is not token-neutral: a dispatch prompt is a
+tool input that stays in the orchestrator's context for the rest of the change, so the
+documents are charged once per group, not once. On this change that is 13 dispatches x 50 kB,
+about 163 000 tokens added to an orchestrator already carrying 254 000, and roughly 1.2
+million extra tokens re-created across its cold rebuilds. The original rule this briefly
+overrode — name the files, do not quote them — was right, and for the reason it gave. What is
+affordable is the **slice**: the requirement text and the design paragraph that govern the
+group, a few hundred words, quoted. Group 5 of `gate-integrity` opened with
 `cat design.md`, `cat proposal.md`, `cat spec.md`, then four greps and an awk hunting the two
 paragraphs that belonged to it: ten of its first twenty tool calls, 3.7 minutes before its
 first edit. Across the groups that orientation phase ran 3 to 12 minutes each, 19% to 57% of
