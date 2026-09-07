@@ -5,6 +5,10 @@ Analysis of the `herdr-openspec` build (2026-09-03 19:58 → 2026-09-05 17:09, ~
 repository. Source: the session transcript and its 124 subagent transcripts under
 `~/.claude/projects/-Users-juusopiikkila-Code-herdr-openspec/`.
 
+Finding 7 is later evidence — the `gate-integrity` change of 2026-09-07, plus a direct probe
+run in this repository. It is filed here because it bounds a proposed extension of Finding 1
+rather than standing on its own.
+
 ## The shape of the spend
 
 | | agents | input tokens | share | assistant turns |
@@ -136,6 +140,54 @@ planning time, or that cannot fail.** The schema's tasks instruction is 90 lines
 says nothing about running a check before shipping it, nor about proving it can go red.
 The human and the reviewers invented that discipline per change, and it caught real
 defects every time.
+
+## Finding 7 — a dispatch prompt is not cached across sibling agents
+
+Finding 1's fix — one implementer per task group, each starting cold — invites an obvious
+follow-on. The groups of one change share a proposal and a design, so if that shared text
+opened every dispatch in identical bytes, only the first group would pay for it. On the
+`gate-integrity` apply the opportunity looked real: the common prefix across all sixteen
+dispatch prompts is **0 characters** — every one opens "You are implementing task group
+N" — while each child was already reusing a constant 28 819-token warm prefix and creating
+roughly 28 600 more on top of it.
+
+It does not work. Three subagents, same type, same model, dispatched back to back:
+
+| probe | prompt | cache_creation | cache_read | total |
+|---|---|---|---|---|
+| A | 4 274 chars | 29 344 | 0 | 29 354 |
+| B | 4 274 chars, identical to A | 10 459 | **18 885** | 29 354 |
+| C | 561 chars, sharing nothing with A | 9 625 | **18 885** | 28 520 |
+
+C read the same 18 885 tokens as B while sharing nothing with A beyond the system prompt and
+the tool definitions. That number is the fixed system-and-tools prefix, independent of the
+prompt, and B's four thousand identical characters bought none of it. The arithmetic agrees:
+B's cache_creation exceeds C's by 834 tokens, and B's prompt exceeds C's by 3 713 characters,
+about 928 tokens. The whole dispatch prompt falls after the breakpoint and is re-created for
+every group. There is no cache breakpoint inside the first user message.
+
+> **Shipped, then corrected.** `97d9f59` wrote the caching rationale into
+> `apply-orchestrator.md` and `schema.yaml`, naming the measurement as outstanding. The
+> measurement then ran and disproved it; `c1e72fb`, `738538b` and `c75bb2e` removed the claim.
+> It is recorded here because the recommendation outlived its justification, and a reader who
+> finds only the surviving half would reasonably re-propose the dead one.
+
+What survives is smaller and true. Quoting proposal.md and design.md into the dispatch is
+**token-neutral** — the implementer pays for them as prompt instead of as a tool result —
+but it removes the fetch and the searching that follows. Group 5 of `gate-integrity` opened with
+`cat design.md`, `cat proposal.md`, `cat spec.md`, then four greps and an awk hunting the two
+paragraphs that belonged to it: ten of its first twenty tool calls, 3.7 minutes before its
+first edit. Across the groups that orientation phase ran 3 to 12 minutes each, 19% to 57% of
+a group's wall time. The prize is turns — roughly 15 to 25 minutes on a run of this size —
+and not the halved cold start the prefix theory promised.
+
+Two adjacent ideas fall with it. Forking each group off the orchestrator inherits the
+orchestrator's *current* context, which on this run measured 129 864 tokens at the first
+dispatch and 236 830 at the last, against a 58 000-token cold start — reintroducing Finding 1
+in a new costume. Priming implementers ahead of their turn is sound in principle, since
+orientation is read-only and cannot violate the attributability criterion, but its ceiling is
+the same orientation phase, and an agent primed more than an hour before its turn pays its
+cold start again anyway.
 
 ## Recommendations, in order of payoff
 
