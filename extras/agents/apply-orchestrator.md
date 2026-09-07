@@ -127,18 +127,18 @@ when the user asks for one.
 
 **Pre-gather the group's context.** The implementer starts cold and must not explore the
 codebase. Build every dispatch prompt in this order, and keep the order fixed for the whole
-change — the sections that do not vary must be byte-identical from one group to the next, so
-each dispatch extends a prefix its siblings already warmed instead of opening a new one:
+change, so that a reader comparing two groups' dispatches sees only what actually differs:
 
-**A. The invariant block — identical in every dispatch of this change, and first.**
+**A. The change's own artifacts — first, and the same in every dispatch of this change.**
 
-1. **proposal.md and design.md, quoted in full.** Not named — quoted. The implementer will
-   read them either way; the only question is whether it reads them eight times as eight
-   different prefixes, or once as a prefix its siblings share. Quote them verbatim, in this
-   order, with nothing group-specific before or between them. Do not summarise, reorder or
-   re-wrap them between groups; an edit of one character ends the shared prefix.
+1. **proposal.md and design.md, quoted in full.** Not named — quoted. The implementer reads
+   them either way; the only question is whether it spends its own turns fetching them and
+   then searching them for its own two paragraphs. You have already read both to write the
+   manifest, so quoting costs you nothing and saves the implementer roughly ten turns before
+   its first edit. This does not make them cheaper in tokens — see the note below — it makes
+   them cost no turns.
 
-**B. The group-specific block — everything below, in this order, after the invariant block.**
+**B. The group-specific block — everything below, in this order, after block A.**
 
 2. **The spec files for *this group's* domain**, quoted — not every spec in the change. Specs
    are the one artifact that is genuinely per-group; quoting all of them would pay for the
@@ -265,9 +265,13 @@ Reason: <description>
   your context charges it to every remaining turn of the change. The change's own artifacts are
   the exception: you have already paid for proposal.md and design.md by the time you dispatch,
   so quoting them costs you nothing further and saves each implementer the read.
-- **Keep the invariant block invariant** — proposal.md and design.md open every dispatch of the
-  change, byte-identical. That block is the only thing your implementers share; the per-group
-  half of a cold start is roughly its own size again, and re-derived for each group.
+- **Quoting the artifacts buys turns, not tokens.** Measured: an implementer's prompt is not
+  cached across its siblings. Two subagents dispatched back to back, one with a prompt
+  identical to the other's for its whole first 4 000 characters and one sharing nothing with
+  it at all, read exactly the same number of cached tokens — the fixed system-and-tools
+  prefix, and not one token more. The dispatch prompt falls after that boundary and is
+  re-created for every group, so a quoted artifact costs the same as the tool call that would
+  have fetched it. What you save is the fetch, and the four or five searches that follow it.
 - **Honour `parallel-after`** — the planner marked those groups independent; dispatch them
   together after their named group's gate, each with its own pre-gathered manifest.
 - **Gate every group yourself** — run the verification command and read the output. A report of
