@@ -14,9 +14,12 @@
 <!-- Before finalising, walk the group list once and ask of each pair whether it must be
      ordered at all — outside-in TDD tells a sequential story about work that often is not
      one. A pair may run in parallel when they share no file, neither needs the other's
-     code to exist, and a failure stays attributable to its own group. Mark those with
-     `<!-- parallel-after: N -->`; where they are genuinely sequential, say so in one line
-     and name the reason. Silence reads as nobody having looked. -->
+     code to exist, and this group's gate run does not compile or execute the other's
+     files — the breadth of the gate command is not the test; what the run reaches is.
+     Mark those with `<!-- parallel-after: N -->`; where they are genuinely sequential,
+     say so in one line and name the first criterion that fires for the pair it fires on.
+     Silence reads as nobody having looked, and a repository-wide fact about the gate
+     reads the same way, because it is true of every change here. -->
 
 <!-- Write every check out in full, RUN it at planning time against current HEAD, and
      record its exit status beside it. A check for behavior this change adds must be RED
