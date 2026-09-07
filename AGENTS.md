@@ -34,7 +34,7 @@ git tag -a vX.Y.Z -m "..." && git push origin vX.Y.Z
 ```
 
 Tag only a pushed commit — a tag pointing at a commit no one can fetch is worse than no
-tag. Current published version: `v0.2.2`.
+tag. Current published version: `v0.2.3`.
 
 Then, in each consumer, `graft update <source> --to vX.Y.Z` moves the pin and syncs.
 Plain `graft update` does **not** find the new tag — it re-resolves the rev already in
@@ -79,7 +79,7 @@ inside the repo.
 ## Consuming this repo
 
 ```sh
-graft add github.com/optioni/openspec-schemas@v0.2.2 schema:tdd 'agent:*'
+graft add github.com/optioni/openspec-schemas@v0.2.3 schema:tdd 'agent:*'
 ```
 
 Take both the schema and the agents, always: the agents implement the lifecycle the
