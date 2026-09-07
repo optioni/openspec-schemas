@@ -163,8 +163,10 @@ Tell it to report `NEEDS_CONTEXT` rather than searching for anything you did not
 
 **Corrections go in section B, never in A.** When a group needs a fix to its task lines, a
 note about what an earlier group actually landed, or a trap you hit while gating, that is
-group-specific — put it with the task lines. Inserting it into the invariant block, or
-opening the prompt with it, ends the shared prefix for every group that follows.
+group-specific — put it with the task lines. That is where the implementer looks for what
+is true of *its* group, and it is the drift that showed up in practice: four groups in one
+change each wedged a correction partway up the prompt, and three later dispatches abandoned
+the shape altogether.
 
 **Parallel dispatch.** After group N passes its gate, dispatch every pending group marked
 `<!-- parallel-after: N -->` in a single message so they run concurrently. Pre-gather each one
