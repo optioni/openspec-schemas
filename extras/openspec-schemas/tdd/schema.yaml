@@ -664,6 +664,12 @@ artifacts:
       and impact; specs own observable behavior; design.md owns technical decisions, test
       boundaries, and verification; tasks.md owns ordered implementation and verification work.
 
+      **Repair a number with a command, not with an edit.** A count corrected in the artifact
+      that raised it is still wrong in every other artifact that quoted it, and the survivors
+      surface one at a time during implementation, each as its own defect. Sweep every
+      artifact for the old value in the same pass, fix each occurrence, and record the sweep
+      rather than the edit.
+
       Then record:
 
       - **Reviewed Artifacts**: every artifact reviewed.
@@ -758,7 +764,10 @@ apply:
     slice this group implements quoted, then that group's specs the same way, its task
     lines only, a short git state summary, and a manifest naming the exact paths the group
     will read or modify plus one similar existing implementation as a pattern reference.
-    Quote slices, name documents. A dispatch prompt is a tool input that stays in the
+    Re-measure before dispatching: the counts and line numbers in a group's task lines were
+    taken when the plan was written, and a claim that no longer reproduces against the tree
+    is drift in the owning artifact, repaired before the group goes out rather than met at
+    its gate. Quote slices, name documents. A dispatch prompt is a tool input that stays in the
     orchestrator's context for the rest of the change, so a document quoted in full is
     charged again for every group dispatched — which is the cost per-group dispatch exists
     to avoid. Quoting the passage that governs this group is cheap and saves the searching;

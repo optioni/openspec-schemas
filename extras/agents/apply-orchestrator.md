@@ -159,6 +159,17 @@ change, so that a reader comparing two groups' dispatches sees only what actuall
 
 Tell it to report `NEEDS_CONTEXT` rather than searching for anything you did not provide.
 
+**Re-measure the group's claims before you hand them over.** Its task lines carry numbers
+and locations taken when the plan was written — counts, line numbers, "the only three places
+that do X". Re-run the ones this group acts on, against the tree as it stands now. A number
+that no longer reproduces is drift: repair the owning artifact first, and dispatch the
+repaired text, rather than letting an implementer build on it and discovering it at the gate.
+
+This is the last moment a claim is cheap to check, and it is where a surprising share of
+surviving planning defects actually surface. On one measured change six CRITICAL findings
+were caught exactly here — three of them the same count repaired in the spec files and in
+neither `tasks.md` nor `design.md`, met again at groups 4, 6 and 8.
+
 **Corrections go in section B, never in A.** When a group needs a fix to its task lines, a
 note about what an earlier group actually landed, or a trap you hit while gating, that is
 group-specific — put it with the task lines. That is where the implementer looks for what
@@ -286,6 +297,9 @@ Reason: <description>
   and not one more. Do not shape a dispatch prompt hoping to warm a prefix for the next group.
 - **Honour `parallel-after`** — the planner marked those groups independent; dispatch them
   together after their named group's gate, each with its own pre-gathered manifest.
+- **Re-measure a group's claims at dispatch** — the counts and line numbers in its task lines
+  were true when the plan was written. A number that no longer reproduces is drift in the
+  artifact, not a detail for the implementer to work around.
 - **Gate every group yourself** — run the verification command and read the output. A report of
   success is not evidence of success.
 - **You are the only writer of tasks.md** — mark `- [x]` after the gate is green, never before,
