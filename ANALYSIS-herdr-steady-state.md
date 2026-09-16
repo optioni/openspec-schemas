@@ -205,6 +205,6 @@ flagged is the instruction that teaches an agent which budgets are real.
 5. **Finding 13** — fix the proposal word budget.
 6. **Finding 12** — let `config.yaml` carry a repository-wide parallelism veto.
 
-Consumer-side, and first: `graft update github.com/optioni/openspec-schemas --to v0.2.4`
+Consumer-side, and first: `graft update github.com/optioni/openspec-schemas --to v0.3.0`
 in `herdr-openspec`. It has been on `v0.2.2` for all nineteen changes, and two of the
 pains above are already fixed upstream.
