@@ -198,12 +198,13 @@ That is what keeps parallel groups from clobbering each other's progress.
 
 If an implementer reports `BLOCKED`, read what it actually hit. A build or test failure it
 could not resolve is a **re-dispatch, not an escalation**: hand the group to a fresh
-implementer together with the real output and what the first one concluded. Two implementers
-per group is the budget, and the second one starting cold with the first one's findings is
-far cheaper than the first one at four hundred turns — cost is quadratic in a context's
-length, so a long agent that is still failing is the most expensive thing in the run.
+implementer together with the real output and what the first one concluded. **Two dispatches
+per group is the budget** — counting a `BLOCKED` return and a failed gate alike — and the
+second one starting cold with the first one's findings is far cheaper than the first one at
+four hundred turns. Cost is quadratic in a context's length, so a long agent that is still
+failing is the most expensive thing in the run.
 
-Escalate to the user on a second `BLOCKED` for the same group, or immediately for a blocker
+Escalate to the user when that budget is spent, or immediately for a blocker
 no implementer can resolve — a spec contradiction, a missing dependency, an unexpected
 design gap — with options:
 1. Retry after the user resolves the issue
@@ -306,8 +307,9 @@ Reason: <description>
   and never let an implementer do it.
 - **A returning implementer is cheaper than a grinding one** — a `BLOCKED` on a failure it
   could not fix is a re-dispatch with its evidence, and a `NEEDS_CONTEXT` is one line added
-  to the manifest. Budget two implementers per group before the group becomes the user's
-  decision. An agent that never returns never reaches this path, which is the cheap one.
+  to the manifest. Two dispatches per group is the budget, a failed gate counting the same as
+  a `BLOCKED`; past that the group is the user's decision. An agent that never returns never
+  reaches this path, which is the cheap one.
 - **The reviewer is the standing independent perspective** — the Change Review group goes to
   `outside-in-tdd-reviewer`, never to an implementer and never inline. Its value is a fresh set
   of eyes, not context savings.
