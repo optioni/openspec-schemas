@@ -83,8 +83,26 @@ artifacts:
       MODIFIED requirements workflow:
       1. Locate the existing requirement in openspec/specs/<capability>/spec.md
       2. Copy the ENTIRE requirement block (from `### Requirement:` through all scenarios)
+         from the live spec **as it stands at current HEAD** — not from an earlier change's
+         delta, not from an archived copy, not from memory
       3. Paste under `## MODIFIED Requirements` and edit to reflect new behavior
       4. Ensure header text matches exactly (whitespace-insensitive)
+      5. Diff the finished block against the live requirement and account for every
+         difference. Each one is either an edit this change intends or a silent revert of
+         somebody else's landed work, and the diff is the only thing that tells them apart.
+         A block carried back byte-identical is not a modification — drop it, or say what
+         changed.
+
+      A MODIFIED block replaces the live requirement wholesale at archive time. A stale copy
+      therefore does not conflict, it **reverts** — and it reverts quietly, in an artifact
+      nobody re-reads. Any change that archives between this plan and its implementation
+      makes every carried body stale until it is re-derived.
+
+      Requirements accrete, and an oversized requirement is the real defect behind most of
+      these reverts: the larger the block, the more of somebody else's work each delta
+      carries, and the less likely anyone reviews it line by line. When a change touching one
+      behavior has to carry a dozen, the requirement has stopped being one requirement —
+      split it into the behaviors it has accumulated.
 
       Common pitfall: Using MODIFIED with partial content loses detail at archive time.
       If adding new concerns without changing existing behavior, use ADDED instead.
@@ -566,6 +584,13 @@ artifacts:
         spec, and no capability exists only in design.md or tasks.md. Capability names
         match the live `openspec/specs/` tree.
 
+      - **Delta fidelity**: every MODIFIED block is diffed against the live requirement at
+        HEAD, and every difference is accounted for as either this change's edit or an
+        unnoticed revert of work that landed since. Record the comparison, not the
+        impression — a body nobody diffed is a body nobody checked, and archiving it
+        overwrites the live requirement whole. A body carried back byte-identical belongs
+        under ADDED or nowhere.
+
       - **Scenario quality and coverage**: every scenario has concrete inputs, observable
         outcomes, and relevant side effects, and tasks.md contains a corresponding test
         or deterministic verification. Authorization, error paths, empty state, and
@@ -678,7 +703,10 @@ apply:
     Before the first implementation task, compare the current HEAD of this repository and
     of any relevant sibling repository with planning-review.md → Reviewed Against. If any
     moved after review, inspect the intervening diff and refresh the affected artifacts
-    and planning review before proceeding. Commits created by this change after
+    and planning review before proceeding. When the intervening commits archived another
+    change, re-derive every MODIFIED block in this change's deltas from the live spec:
+    a body written against the older text does not conflict at archive time, it reverts
+    that change silently. Commits created by this change after
     implementation starts are expected; later external commits that touch a planned
     contract or implementation surface require the same refresh.
 
