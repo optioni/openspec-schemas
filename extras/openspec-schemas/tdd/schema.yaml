@@ -736,7 +736,12 @@ apply:
     to avoid. Quoting the passage that governs this group is cheap and saves the searching;
     quoting the document is not. Do not shape a dispatch prompt hoping to warm a prefix for
     the next group: measured, a prompt is not cached across sibling agents.
-    Tell it to report NEEDS_CONTEXT rather than searching for anything not provided. After
+    Tell it to report NEEDS_CONTEXT rather than searching for anything not provided, and to
+    stop and report rather than grind: the same failure surviving three consecutive fixes is
+    a BLOCKED, and a file the manifest does not name is a NEEDS_CONTEXT. Both are complete
+    outcomes. Re-dispatch the group to a fresh implementer with that evidence rather than
+    escalating — budget two per group — because cost is quadratic in a context's length and
+    a long agent that is still failing is the most expensive thing in the run. After
     completing group N, dispatch all remaining groups marked `<!-- parallel-after: N -->`
     simultaneously, then gate each. Dispatch the Change Review group to the reviewer agent
     with only the artifacts and the diff.
