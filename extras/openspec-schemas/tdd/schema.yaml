@@ -28,8 +28,9 @@ artifacts:
       proposal and specs phases. Research existing specs in `openspec/specs/` before
       filling this in. Each capability listed here will need a corresponding spec file.
 
-      Keep it concise (under 400 words). Focus on the "why" not the "how" —
-      implementation details belong in design.md.
+      Keep it under about 900 words across all five sections — room for the Capabilities
+      contract and a real Impact list, and no room for design. Focus on the "why" not the
+      "how"; implementation details belong in design.md.
 
       This is the foundation — specs, design, and tasks all build on this.
     requires: []
