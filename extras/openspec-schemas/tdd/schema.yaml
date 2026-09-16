@@ -283,6 +283,14 @@ artifacts:
         show it goes quiet again. Record both halves. An unfalsifiable guard is worse than no
         guard, because it is believed.
 
+      **Record what the check selected, not only that it ran.** A selector naming nothing
+      succeeds — a test filter that matches no test, a pattern searched under a path that does
+      not exist, a result line dropped by whatever reads the output. There was nothing to
+      fail, so it passed, and it will keep passing after the behavior it was named for is
+      deleted. So the evidence beside every check is a count: tests executed, lines matched,
+      files scanned. **Zero selected is a failed check**, and the count — not the exit
+      status — is what shows the command reaches the thing it claims to verify.
+
       **Every number in the plan comes from a command.** Line counts, call-site counts,
       scenario totals, coverage percentages, "the only three places that do X" — write the
       command that produced the number beside the number. Counts arrived at by reading are
@@ -638,7 +646,10 @@ artifacts:
 
       - **Scenarios whose verification cannot fail.** A scenario checked by printing
         rather than asserting, by a snapshot of a state that is never settled, or by a
-        test that would still pass with the behavior removed.
+        test that would still pass with the behavior removed. Run every command in the
+        verification matrix and read how many tests it actually selected: a filter that
+        matches none of them exits clean, so an entire matrix can be green while binding
+        nothing. The count is the finding; the exit status is not.
 
       - **Verification that stops short of the step it vouches for.** Each entry in the
         verification matrix must reach the step it is evidence about.
