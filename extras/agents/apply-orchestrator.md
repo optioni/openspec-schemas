@@ -62,10 +62,16 @@ Split tasks.md by `##` headers. For each group:
 - **Done**: all tasks are `- [x]`. Skip entirely.
 - **Pending**: has at least one `- [ ]`. Add to the work list.
 
-Classify each pending group by its header text:
+Classify each pending group. The three named groups go by header text; everything else is
+typed by the `<!-- kind: -->` marker the planner wrote on the line after the `##` heading.
+Check the headers first — the Change Review group also carries an operational marker, and it
+belongs to the reviewer:
 - Contains "Outer Loop RED" → **acceptance-red** (write the failing test only, do not implement)
 - Contains "Outer Loop GREEN" → **acceptance-green** (make the acceptance test pass)
 - Contains "Change Review" → **review** (dispatch reviewer subagent)
+- Marked `<!-- kind: operational -->` → **operational** — configuration, migration, plumbing
+  and documentation work. Dispatched to an implementer like any other group, but told it is
+  operational, so it runs CHECK → CHANGE → VERIFY instead of a test-first cycle.
 - Anything else → **implementation**
 
 Read the line immediately after each `##` heading for a `<!-- parallel-after: N -->` marker.
@@ -123,7 +129,7 @@ when the user asks for one.
 
 ---
 
-### Groups typed: acceptance-red, acceptance-green, implementation — dispatch an implementer
+### Groups typed: acceptance-red, acceptance-green, implementation, operational — dispatch an implementer
 
 **Pre-gather the group's context.** The implementer starts cold and must not explore the
 codebase. Build every dispatch prompt in this order, and keep the order fixed for the whole
@@ -151,8 +157,12 @@ change, so that a reader comparing two groups' dispatches sees only what actuall
 5. **Git state** — one line per completed group, so it knows what code already exists.
 6. **The verification command** for this repository, from the project context, and the
    instruction to report its output rather than a summary if it fails.
-7. **The group's type**, when it is `acceptance-red`: say explicitly that the goal is a
-   correctly-failing test and it must implement nothing to make it pass.
+7. **The group's type**, whenever it is not plain implementation. For `acceptance-red`, say
+   explicitly that the goal is a correctly-failing test and it must implement nothing to make
+   it pass. For `operational`, say that it is operational and runs CHECK → CHANGE → VERIFY,
+   and name the evidence each VERIFY task is gated on. An implementer told nothing arrives
+   under test-first rules and spends the difference working out that a config edit or a
+   documentation rule has no behavior to assert.
 8. **Staging discipline**: stage explicit paths, never `git add -A`/`-u`. This is not optional
    when parallel groups are running — two implementers in one working tree will otherwise
    commit each other's files.
@@ -316,6 +326,10 @@ Reason: <description>
   of eyes, not context savings.
 - **Acceptance-red groups must not have implementation** — the group is done when the test fails
   for the right reason.
+- **Operational groups are not test-first** — a group marked `<!-- kind: operational -->` runs
+  CHECK → CHANGE → VERIFY, and the dispatch has to say so. The marker is already in the task
+  lines you pass through; dropping it on the floor is how a documentation edit reaches an agent
+  whose first rule is to write a failing test.
 - **Pause between groups, never mid-group** — a boundary pause loses nothing; a mid-group halt
   strands uncommitted work. Decide whether to continue only at a boundary.
 - **No worktree unless asked** — work in the checkout you were given. Isolation is the user's
