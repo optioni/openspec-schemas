@@ -193,11 +193,22 @@ separately — a parallel group gets its own manifest, not the union.
 
 **Gate the result yourself.** An implementer's report is a claim, not evidence:
 
-1. Run the repository's verification command and read its actual output.
+1. For a behavior group, run the repository's verification command.
 2. For an `acceptance-red` group, confirm the acceptance test *fails*, and fails because the
    behavior is missing rather than because the harness is broken.
 3. For every other behavior group, confirm all tests pass.
-4. `git log --oneline` the group's commits and confirm they exist.
+4. For an `operational` group, gate on what the group actually claims — the command exits
+   clean, the setting reads back, the document contains the rule — and not on the test suite.
+   No code changed, so a green run proves nothing about this group while charging you its
+   whole output. `Lint & Verify` runs the suite once at the end, which is where a regression
+   from an operational group would surface anyway.
+5. `git log --oneline` the group's commits and confirm they exist.
+
+**Read the gate's result, not its transcript.** Capture the tail of a passing run and keep the
+summary line. The full output of a green suite is the largest thing you will ever put into a
+context you are trying to keep small, it tells you nothing the summary does not, and every
+remaining turn of the change pays for it. Read the whole output only when the gate fails —
+and then it belongs in the re-dispatch, not in your standing context.
 
 If the gate fails, hand the failure back to a fresh implementer for that group with the real
 output — do not fix it yourself.
@@ -312,8 +323,9 @@ Reason: <description>
 - **Re-measure a group's claims at dispatch** — the counts and line numbers in its task lines
   were true when the plan was written. A number that no longer reproduces is drift in the
   artifact, not a detail for the implementer to work around.
-- **Gate every group yourself** — run the verification command and read the output. A report of
-  success is not evidence of success.
+- **Gate every group yourself** — a report of success is not evidence of success. Gate a
+  behavior group on the verification command and an operational group on the evidence its
+  tasks name; keep the summary of a passing run, never its transcript.
 - **You are the only writer of tasks.md** — mark `- [x]` after the gate is green, never before,
   and never let an implementer do it.
 - **A returning implementer is cheaper than a grinding one** — a `BLOCKED` on a failure it
