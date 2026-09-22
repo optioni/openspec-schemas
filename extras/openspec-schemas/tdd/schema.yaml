@@ -803,7 +803,9 @@ apply:
     a long agent that is still failing is the most expensive thing in the run. After
     completing group N, dispatch all remaining groups marked `<!-- parallel-after: N -->`
     simultaneously, then gate each. Dispatch the Change Review group to the reviewer agent
-    with only the artifacts and the diff.
+    with only the artifacts and the base commit ref, and let the reviewer run the diff itself —
+    a context that ends with the review can afford the change's largest object; the
+    orchestrator's, with groups still to gate, cannot.
 
     If the repository defines no such agents, implement each group inline in this session
     and delegate only the Change Review finding pass. Never fork the implementing session

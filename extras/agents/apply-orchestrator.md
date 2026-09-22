@@ -249,10 +249,13 @@ design.md or tasks.md — treat that as drift, not as a retry.
 **Gather context for the reviewer:**
 
 1. Planning docs — proposal.md, design.md, all spec files (already read in Step 1).
-2. Full diff — run `git log --oneline` to find the commit just before this change's first commit;
-   run `git diff <base>..HEAD` for the full diff.
+2. The base ref — run `git log --oneline` and find the commit just before this change's first
+   commit. Pass that ref. **Do not run the diff yourself.** It is the largest single object in
+   the change and this is the second-to-last group, so reading it here charges the whole diff
+   to every turn you have left, to save a cold agent one command it can run in a context that
+   ends when it reports.
 
-**Dispatch an `outside-in-tdd-reviewer` subagent** with planning docs + diff.
+**Dispatch an `outside-in-tdd-reviewer` subagent** with the planning docs and the base ref.
 
 **Handle the response:**
 
