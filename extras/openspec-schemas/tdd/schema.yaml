@@ -782,7 +782,10 @@ apply:
     the part that does not vary first: proposal.md and design.md by path together with the
     slice this group implements quoted, then that group's specs the same way, its task
     lines only, a short git state summary, and a manifest naming the exact paths the group
-    will read or modify plus one similar existing implementation as a pattern reference.
+    will read or modify plus one similar existing implementation as a pattern reference. Where
+    a group edits agent-facing guidance, the manifest names the candidate files and quotes the
+    entries the change may supersede, so placing the rule in the narrowest file that covers it
+    does not mean reading every such file in the repository first.
     Re-measure before dispatching: the counts and line numbers in a group's task lines were
     taken when the plan was written, and a claim that no longer reproduces against the tree
     is drift in the owning artifact, repaired before the group goes out rather than met at

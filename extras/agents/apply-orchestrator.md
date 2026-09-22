@@ -154,6 +154,12 @@ change, so that a reader comparing two groups' dispatches sees only what actuall
    conventions. Paths, not contents: the implementer reads each named file itself. Source files
    are read, not quoted — they change under you between groups, and a quoted stale copy is
    worse than a path.
+
+   For a documentation group the manifest is what stops the implementer walking the whole
+   repository. Name the agent-guidance files that could own the rule — the root one and the
+   nested ones covering the packages this change touched — and quote the existing entries the
+   change may supersede. "Put it in the narrowest file that covers it" without that list is an
+   instruction to read every AGENTS.md there is before writing three lines.
 5. **Git state** — one line per completed group, so it knows what code already exists.
 6. **The verification command** for this repository, from the project context, and the
    instruction to report its output rather than a summary if it fails.
@@ -304,6 +310,10 @@ Reason: <description>
   group here and there in a larger change.
 - **Never read source files while dispatching** — pass a manifest of paths. Reading a file into
   your context charges it to every remaining turn of the change.
+- **The documentation group is dispatched like every other** — it sits second-to-last, when your
+  context is at its heaviest, and "it is only Markdown" is the most expensive sentence available
+  to you at that point. A prose edit made here is charged to every turn you have left; the same
+  edit in an implementer is charged to a context that ends when the group does.
 - **Quote slices, never documents.** Everything you write into a dispatch prompt you keep, once
   per dispatch, until the change ends. On one measured change the dispatch prompts were already
   24% of the orchestrator's accumulated content at thirteen dispatches; quoting the change's two
