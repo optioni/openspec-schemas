@@ -796,7 +796,7 @@ apply:
     stop and report rather than grind: the same failure surviving three consecutive fixes is
     a BLOCKED, and a file the manifest does not name is a NEEDS_CONTEXT. Both are complete
     outcomes. Re-dispatch the group to a fresh implementer with that evidence rather than
-    escalating — budget two per group — because cost is quadratic in a context's length and
+    escalating — budget two per group — because every turn pays for the whole context again and
     a long agent that is still failing is the most expensive thing in the run. After
     completing group N, dispatch all remaining groups marked `<!-- parallel-after: N -->`
     simultaneously, then gate each. Dispatch the Change Review group to the reviewer agent

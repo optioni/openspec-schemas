@@ -201,8 +201,8 @@ could not resolve is a **re-dispatch, not an escalation**: hand the group to a f
 implementer together with the real output and what the first one concluded. **Two dispatches
 per group is the budget** — counting a `BLOCKED` return and a failed gate alike — and the
 second one starting cold with the first one's findings is far cheaper than the first one at
-four hundred turns. Cost is quadratic in a context's length, so a long agent that is still
-failing is the most expensive thing in the run.
+four hundred turns. Every turn pays for the whole context again, so a long agent that is
+still failing is the most expensive thing in the run.
 
 Escalate to the user when that budget is spent, or immediately for a blocker
 no implementer can resolve — a spec contradiction, a missing dependency, an unexpected
@@ -287,11 +287,12 @@ Reason: <description>
   per dispatch, until the change ends. On one measured change the dispatch prompts were already
   24% of the orchestrator's accumulated content at thirteen dispatches; quoting the change's two
   main artifacts into each would have taken its context from 254 000 tokens to about 418 000.
-- **Your context is re-created, not re-read, after every dispatch.** Measured: the cache lives
-  about five minutes, and an implementer runs for seven to sixty. All twelve of one run's
-  dispatch waits came back cold and rebuilt the whole context — 2.38 million tokens re-created.
-  You cannot avoid that by pinging; you are blocked inside the tool call and have no turn. The
-  only lever is being smaller, and it is linear: every token you carry is paid again per group.
+- **A dispatch wait can outlive the prompt cache.** An implementer runs for minutes to the
+  better part of an hour, and whether your context is still cached when it returns depends on a
+  TTL you neither control nor can check from in here. Assume it is not: a cold return rebuilds
+  your whole context before you can gate anything. You cannot keep it warm by pinging — you are
+  blocked inside the tool call and have no turn. The only lever is being smaller, and it pays
+  either way, because a cached token is cheaper than an uncached one rather than free.
 - **A shared prompt is not cached across siblings.** Two subagents dispatched back to back, one
   with a prompt identical to the other's for its first 4 000 characters and one sharing nothing
   with it, read exactly the same number of cached tokens — the fixed system-and-tools prefix,
