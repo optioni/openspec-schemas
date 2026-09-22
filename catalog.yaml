@@ -14,3 +14,4 @@ provides:
   - { kind: agent,  name: outside-in-tdd-reviewer,    from: extras/agents/outside-in-tdd-reviewer.md }
   - { kind: agent,  name: phase-orchestrator,         from: extras/agents/phase-orchestrator.md }
   - { kind: agent,  name: planning-reviewer,          from: extras/agents/planning-reviewer.md }
+  - { kind: agent,  name: repo-locator,               from: extras/agents/repo-locator.md }

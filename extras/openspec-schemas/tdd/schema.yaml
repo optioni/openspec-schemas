@@ -805,7 +805,12 @@ apply:
     simultaneously, then gate each. Dispatch the Change Review group to the reviewer agent
     with only the artifacts and the base commit ref, and let the reviewer run the diff itself —
     a context that ends with the review can afford the change's largest object; the
-    orchestrator's, with groups still to gate, cannot.
+    orchestrator's, with groups still to gate, cannot. If the repository also provides a
+    locator subagent, send location questions there — a planned path that no longer exists, a
+    file an implementer named only by concept, which nested guidance file covers a package —
+    and keep the paths it returns rather than its reasoning. The orchestrator does not search
+    the tree itself, because a search's output does not need to survive the change and its
+    context does.
 
     If the repository defines no such agents, implement each group inline in this session
     and delegate only the Change Review finding pass. Never fork the implementing session

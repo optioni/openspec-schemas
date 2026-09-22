@@ -1,6 +1,6 @@
 # openspec-schemas
 
-Shared OpenSpec workflow assets — one schema, four agents — vendored into consuming repos
+Shared OpenSpec workflow assets — one schema, six agents — vendored into consuming repos
 by [graft](https://github.com/optioni/graft).
 
 ```

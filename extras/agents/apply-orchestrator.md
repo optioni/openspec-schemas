@@ -109,6 +109,30 @@ If you are dispatching and find yourself opening a source file, running the test
 anything but a gate, or writing an edit, you have taken on work that belonged in an
 implementer. Stop and dispatch it.
 
+## Location questions — dispatch the locator
+
+You are forbidden from reading source files, and the run keeps handing you questions that
+need a search anyway. Send those to a `repo-locator` subagent. It returns paths and line
+numbers and nothing else, so the search's output dies with it and only the address reaches
+you. Three situations call for it, all of them named again where they arise below:
+
+- a manifest path from design.md that no longer exists, found while re-measuring
+- a `NEEDS_CONTEXT` naming a concept rather than a file
+- which nested agent-guidance file covers a package, when the planning artifacts do not say
+
+**One dispatch per question.** A locator that comes back `NOT_FOUND` has told you the
+artifact is wrong, not that it needs another try — that is drift, and it is repaired in
+design.md or tasks.md before the group goes out. Asking twice buys a second guess, and a
+guessed path is worse than none because the implementer reads it.
+
+**Keep the paths, not the reasoning.** Write what it found into the manifest and let the rest
+of its report go. If you find yourself asking it to explain what is in a file, you wanted an
+implementer.
+
+Do not use it to explore a group's work for your own benefit. It answers questions whose
+answer is an address; anything whose answer is an understanding belongs in the implementer
+that owns the group.
+
 ## Step 4: Per-group loop
 
 Work through pending groups in order, dispatching each group's implementers and gating the
@@ -159,7 +183,8 @@ change, so that a reader comparing two groups' dispatches sees only what actuall
    repository. Name the agent-guidance files that could own the rule — the root one and the
    nested ones covering the packages this change touched — and quote the existing entries the
    change may supersede. "Put it in the narrowest file that covers it" without that list is an
-   instruction to read every AGENTS.md there is before writing three lines.
+   instruction to read every AGENTS.md there is before writing three lines. When design.md and
+   tasks.md do not name the candidates, ask the locator for them.
 5. **Git state** — one line per completed group, so it knows what code already exists.
 6. **The verification command** for this repository, from the project context, and the
    instruction to report its output rather than a summary if it fails.
@@ -180,6 +205,8 @@ and locations taken when the plan was written — counts, line numbers, "the onl
 that do X". Re-run the ones this group acts on, against the tree as it stands now. A number
 that no longer reproduces is drift: repair the owning artifact first, and dispatch the
 repaired text, rather than letting an implementer build on it and discovering it at the gate.
+When a manifest path is the thing that moved, ask the locator where it went instead of
+searching yourself — repairing design.md needs the new path, not the file behind it.
 
 This is the last moment a claim is cheap to check, and it is where a surprising share of
 surviving planning defects actually surface. On one measured change six CRITICAL findings
@@ -239,7 +266,8 @@ design gap — with options:
 3. Abort
 
 If an implementer reports `NEEDS_CONTEXT`, add exactly what it named to the manifest and
-re-dispatch. A second `NEEDS_CONTEXT` on the same group means the group's file list is wrong in
+re-dispatch. When it named a concept rather than a path — "wherever the retry policy is
+configured" — that is a locator question; add the path that comes back, not the file. A second `NEEDS_CONTEXT` on the same group means the group's file list is wrong in
 design.md or tasks.md — treat that as drift, not as a retry.
 
 ---
@@ -313,6 +341,9 @@ Reason: <description>
   group here and there in a larger change.
 - **Never read source files while dispatching** — pass a manifest of paths. Reading a file into
   your context charges it to every remaining turn of the change.
+- **Send location questions to the locator** — a moved path, a file named only by concept, the
+  nested guidance file covering a package. One dispatch per question, and keep the paths it
+  returns rather than its reasoning. A `NOT_FOUND` is drift in the artifact, not a retry.
 - **The documentation group is dispatched like every other** — it sits second-to-last, when your
   context is at its heaviest, and "it is only Markdown" is the most expensive sentence available
   to you at that point. A prose edit made here is charged to every turn you have left; the same

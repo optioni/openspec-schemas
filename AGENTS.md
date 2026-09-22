@@ -106,7 +106,7 @@ decoration.
 
 ### `extras/agents/`
 
-Five Claude Code agents, flat `.md` files with YAML frontmatter (`name`, `description`,
+Six Claude Code agents, flat `.md` files with YAML frontmatter (`name`, `description`,
 `model`):
 
 - `apply-orchestrator` — coordinates a change, dispatching one implementer per task group
@@ -114,6 +114,7 @@ Five Claude Code agents, flat `.md` files with YAML frontmatter (`name`, `descri
 - `outside-in-tdd-reviewer` — reviews a finished change against its plan, reports only
 - `planning-reviewer` — reviews one slice of a plan before implementation, reports only
 - `phase-orchestrator` — drives ff-change → apply → archive across many changes
+- `repo-locator` — answers one location question, returning paths and never file contents
 
 `name` in frontmatter must match the filename stem, and `flatten: true` in the catalog
 means these land directly in the consumer's `.claude/agents/` with no directory nesting.
@@ -164,7 +165,7 @@ consumer repo and running `openspec validate <change> --strict` there.
   edits a copy that the next sync discards. The source is here. There is no way to
   collect an edit back — reproduce it in this repo instead.
 - graft prunes only files it wrote, tracked per item in the consumer's `graft.lock`, so a
-  repo's own agents can sit in `.claude/agents/` beside the synced five and never be
+  repo's own agents can sit in `.claude/agents/` beside the synced six and never be
   touched.
 - Consumers hold real copied files, not symlinks, so CI and cloud clones work and each
   consumer pins its own version by committing what it synced.
