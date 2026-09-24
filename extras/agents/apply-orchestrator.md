@@ -198,7 +198,8 @@ change, so that a reader comparing two groups' dispatches sees only what actuall
    when parallel groups are running — two implementers in one working tree will otherwise
    commit each other's files.
 
-Tell it to report `NEEDS_CONTEXT` rather than searching for anything you did not provide.
+Tell it to report `NEEDS_CONTEXT` rather than searching for anything you did not provide, and
+`NEEDS_DECISION` rather than editing an existing assertion its tasks collide with.
 
 **Re-measure the group's claims before you hand them over.** Its task lines carry numbers
 and locations taken when the plan was written — counts, line numbers, "the only three places
@@ -235,7 +236,20 @@ separately — a parallel group gets its own manifest, not the union.
    No code changed, so a green run proves nothing about this group while charging you its
    whole output. `Lint & Verify` runs the suite once at the end, which is where a regression
    from an operational group would surface anyway.
-5. `git log --oneline` the group's commits and confirm they exist.
+5. **Build everything the repository builds, not only what the group touched.** A group whose
+   tests pass in one module while another module, target or test target no longer compiles is
+   not green: the next group inherits a broken tree and spends its first dispatch repairing
+   yours. When the verification command compiles a subset — one package, one target — run
+   the full build as well. A group that renames or removes something is the likeliest to pass
+   its own tests and break a consumer it was never shown.
+6. `git log --oneline` the group's commits and confirm they exist.
+7. **Read the group's diff for changed assertions in tests that existed before it.** Added
+   tests are the group's own; a *modified* pre-existing assertion must trace to a task line
+   that names it or to a scenario the change's delta spec modifies. One that traces to
+   neither is a pinned decision the implementer overrode — treat it as `NEEDS_DECISION`
+   below, even though the suite is green. Especially check RED commits: a test that was
+   rewritten to agree with the implementation reads as a clean pass, and it is how a
+   reordering, a renamed value or a dropped guarantee gets past a gate that only runs tests.
 
 **Read the gate's result, not its transcript.** Capture the tail of a passing run and keep the
 summary line. The full output of a green suite is the largest thing you will ever put into a
@@ -269,6 +283,14 @@ If an implementer reports `NEEDS_CONTEXT`, add exactly what it named to the mani
 re-dispatch. When it named a concept rather than a path — "wherever the retry policy is
 configured" — that is a locator question; add the path that comes back, not the file. A second `NEEDS_CONTEXT` on the same group means the group's file list is wrong in
 design.md or tasks.md — treat that as drift, not as a retry.
+
+If an implementer reports `NEEDS_DECISION` — or your own gate finds a pinned assertion
+rewritten — **escalate; never re-dispatch and never decide.** A task line colliding with a
+test or spec scenario is a contradiction in the plan, and a fresh implementer would only
+pick a side the same way the first one declined to. Report `Apply paused` with both sides
+quoted, what each choice would change for a user, and the options. Record the answer in the
+planning artifacts, attributed to whoever gave it, before the next group is dispatched —
+the implementer building on the decision needs it in its manifest, not in a message.
 
 ---
 
@@ -377,6 +399,8 @@ Reason: <description>
   to the manifest. Two dispatches per group is the budget, a failed gate counting the same as
   a `BLOCKED`; past that the group is the user's decision. An agent that never returns never
   reaches this path, which is the cheap one.
+- **A `NEEDS_DECISION` is never re-dispatched** — a plan that contradicts a pinned test or
+  scenario is the user's to resolve, and neither you nor an implementer picks the side.
 - **The reviewer is the standing independent perspective** — the Change Review group goes to
   `outside-in-tdd-reviewer`, never to an implementer and never inline. Its value is a fresh set
   of eyes, not context savings.

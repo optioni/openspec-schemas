@@ -798,8 +798,13 @@ apply:
     Tell it to report NEEDS_CONTEXT rather than searching for anything not provided, and to
     stop and report rather than grind: the same failure surviving three consecutive fixes is
     a BLOCKED, and a file the manifest does not name is a NEEDS_CONTEXT. Both are complete
-    outcomes. Re-dispatch the group to a fresh implementer with that evidence rather than
-    escalating — budget two per group — because every turn pays for the whole context again and
+    outcomes. A task colliding with an existing assertion that a spec scenario or an earlier
+    change pinned is a NEEDS_DECISION: the implementer quotes both and stops rather than
+    rewriting the assertion, and the orchestrator escalates it to the user instead of
+    re-dispatching. Gate each group on the full build, not only the targets it touched, and
+    read its diff for modified pre-existing assertions that no task line or delta scenario
+    accounts for. For BLOCKED and NEEDS_CONTEXT, re-dispatch the group to a fresh implementer
+    with that evidence rather than escalating — budget two per group — because every turn pays for the whole context again and
     a long agent that is still failing is the most expensive thing in the run. After
     completing group N, dispatch all remaining groups marked `<!-- parallel-after: N -->`
     simultaneously, then gate each. Dispatch the Change Review group to the reviewer agent
