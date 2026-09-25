@@ -151,6 +151,22 @@ previous group is marked `- [x]` and committed. Resume after the window resets o
 instruction. If no such check exists, keep the boundary discipline anyway and surface a pause
 when the user asks for one.
 
+**When a dispatch returns before the implementer does.** Some harnesses run every subagent in
+the background: the dispatch call returns at once, and the implementer's result arrives later
+as a notification. You have no tool that blocks until it lands, so ending your turn is how you
+wait, and your parent reads whatever you wrote last as your final report. Make that message
+exactly `Apply waiting: group N, implementer <id>`, and nothing else: no summary, no status of
+later groups, nothing the parent could mistake for a finished run. You will be resumed when the
+implementer returns.
+
+**Every resume starts with a reconcile, before any dispatch.** Re-read tasks.md and
+`git log --oneline` since your last gated commit. A parent that took your waiting message for a
+hand-back may have gated, ticked or dispatched groups itself in the meantime. A group that is
+already ticked, or whose commits already exist, is not yours to dispatch again: gate what is
+there and move on. Only a group with neither is still pending. Measured on one change: an
+orchestrator that skipped this step dispatched a second implementer for a group another one was
+already running, and later claimed the parent's commits as its own.
+
 ---
 
 ### Groups typed: acceptance-red, acceptance-green, implementation, operational — dispatch an implementer
@@ -359,6 +375,9 @@ Reason: <description>
 
 - **Dispatch per group** — one `outside-in-tdd-implementer` per task group is the default. Your
   context is the run's dominant cost and it is the one thing per-group dispatch protects.
+- **Waiting is `Apply waiting`, and resuming is a reconcile** — on a background harness, end
+  your turn with only `Apply waiting: group N, implementer <id>`, and on every resume re-read
+  tasks.md and the git log before dispatching anything (Step 4).
 - **Inline only for a change of three groups or fewer** — and then for all of it, not for a
   group here and there in a larger change.
 - **Never read source files while dispatching** — pass a manifest of paths. Reading a file into
@@ -378,7 +397,8 @@ Reason: <description>
   better part of an hour, and whether your context is still cached when it returns depends on a
   TTL you neither control nor can check from in here. Assume it is not: a cold return rebuilds
   your whole context before you can gate anything. You cannot keep it warm by pinging — you are
-  blocked inside the tool call and have no turn. The only lever is being smaller, and it pays
+  either blocked inside the tool call or, on a background harness, between turns, and have no
+  turn either way. The only lever is being smaller, and it pays
   either way, because a cached token is cheaper than an uncached one rather than free.
 - **A shared prompt is not cached across siblings.** Two subagents dispatched back to back, one
   with a prompt identical to the other's for its first 4 000 characters and one sharing nothing

@@ -50,6 +50,8 @@ Spawn an **`apply-orchestrator`** subagent **using the `sonnet` model**:
 
 One subagent per change is the right isolation boundary for an unattended batch: it keeps each change's full implementation context out of your (the phase orchestrator's) window. The apply-orchestrator in turn dispatches **one implementer subagent per task group**, so no single context carries a whole change; expect its report to summarise groups, not code.
 
+A report of `Apply waiting: group N, implementer <id>` is not a result. On a harness that runs subagents in the background, the apply-orchestrator ends its turn to wait for an implementer and is resumed when that implementer returns. Do nothing to the change in the meantime: no gating, no ticking, no dispatching another orchestrator or implementer for it. Wait for its `Apply complete` or `Apply paused`.
+
 If the subagent reports `Apply paused` or any blocker: **surface the full status output and ask for instructions**. Options to offer:
 1. Retry (after the user resolves the issue)
 2. Skip this change and continue with the next
