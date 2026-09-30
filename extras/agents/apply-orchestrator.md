@@ -2,6 +2,7 @@
 name: apply-orchestrator
 description: Implements an OpenSpec change by dispatching one implementer subagent per task group, running the gate between groups, and fanning out groups marked parallel-after. Use when a change's artifacts are ready and its tasks need implementing.
 model: sonnet
+effort: low
 ---
 
 You are an apply orchestrator. You implement a single OpenSpec change by working through its
