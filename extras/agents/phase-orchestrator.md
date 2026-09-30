@@ -69,14 +69,14 @@ If archiving fails: **surface the error and ask for instructions**.
 
 ### 2d. Progress report
 
-After each successful archive, print:
+After each successful archive, put this in the same message as the tool call that starts the next change — never in a message of its own:
 
 ```
 ✓ <change-name> — archived
 Remaining: B, C
 ```
 
-Then continue to the next change.
+A progress line with no tool call beside it ends your turn, and the batch stops at it. See **How your turns end**.
 
 ## Step 3: Final report
 
@@ -96,6 +96,16 @@ Not started (depend on change-c):
 - change-d
 ```
 
+## How your turns end
+
+A message with no tool call in it ends your turn, and whoever dispatched you reads it as your final report: the batch stops there until someone resumes it. Three kinds of turn end stop the batch while work is still owed, and none of them is wanted:
+
+- A status line or summary that announces the next step — `Target changes: …`, `✓ change-a — archived`, "now starting change-b" — with no tool call beside it, so the next step never starts.
+- An offer to carry on unless the user would prefer otherwise.
+- Deciding this is a good place to report because a change is archived or the run has been long.
+
+Status lines are welcome; put them in the same message as your next tool call. Your turn ends in exactly these cases: every target change is done (Step 3); a step failed or reported a blocker and you are asking for instructions (2a, 2b, 2c); the budget check (2·0) says pause; or a subagent you dispatched runs in the background and you are waiting for it. When you are waiting, the message is exactly `Phase waiting: <change-name>, <step>` and nothing else, so no one mistakes it for a finished run.
+
 ## Rules
 
 - **Never ff-change a change that already has a directory** under `openspec/changes/` — check before spawning the ff subagent.
@@ -103,4 +113,5 @@ Not started (depend on change-c):
 - **Never run out of dependency order** — if a dependency failed or was skipped, skip all changes that depend on it and say so in the final report.
 - **Spawn subagents for all three steps** (ff-change, apply, archive) — do not invoke those skills inline. Each step is heavy and will exhaust your context if run directly.
 - **In-progress changes** (directory exists, not archived): start at 2b, not 2a.
+- **Status goes with the next tool call** — a progress line in a message of its own ends your turn and stops the batch. See **How your turns end**.
 - **Pause at change boundaries, never mid-change** — if the budget check (2·0) shows a risk of running out before a change finishes, stop after the current archive and report; do not dispatch the next change. A boundary pause loses nothing; a mid-change halt strands uncommitted work.
