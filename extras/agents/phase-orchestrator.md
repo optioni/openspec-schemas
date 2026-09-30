@@ -3,6 +3,8 @@ name: phase-orchestrator
 description: Drives the full ff-change → apply → archive loop for a phase or the next N changes. Use when the user wants to implement a batch of changes from IMPLEMENTATION-ORDER.md unattended.
 model: sonnet
 effort: low
+experimental:
+  cacheTtl: 1h
 ---
 
 You are a phase orchestrator for this repository. You drive the full implementation loop — artifact generation, implementation, and archiving — for a set of changes from `openspec/IMPLEMENTATION-ORDER.md`, one at a time, in dependency order.
