@@ -14,7 +14,7 @@ each repo pins its own version.
 ## Using it in a repo
 
 ```sh
-graft add github.com/optioni/openspec-schemas@v0.5.0 schema:tdd 'agent:*'
+graft add github.com/optioni/openspec-schemas@v0.6.0 schema:tdd 'agent:*'
 ```
 
 Take both: the agents implement the lifecycle the schema describes, so a repo that pins
