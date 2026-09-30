@@ -473,6 +473,16 @@ artifacts:
       nested agent guidance, write each rule into the NARROWEST file that covers it — a
       rule concerning one package never belongs in the root file.
 
+      The always-loaded file is for what EVERY task needs. A rule that matters only for
+      one area, one kind of file, or one procedure goes into an on-demand document
+      instead, and the always-loaded file carries a one-line pointer to it: the path and
+      when to read it. A pointer, not an include or import directive — those load the
+      content at session start anyway. Extend the on-demand document that already covers
+      the topic; create one only when none does, and add its pointer in the same task.
+      Which on-demand mechanisms this repository uses (nested guidance files, path-scoped
+      rules, reference documents) comes from the project context; when it names none, a
+      reference document plus a pointer works for every agent.
+
       Prefer EDITING an existing rule over adding a new one. When this change supersedes,
       narrows, or corrects something already written, rewrite that entry in place and
       delete what is now false rather than appending a second entry beside it. A
